@@ -1,0 +1,2 @@
+class CannotFoundTask(Exception):
+    pass
