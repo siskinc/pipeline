@@ -6,7 +6,7 @@ import time
 from pipeline.errors import NotFoundNodeException, NotFoundScriptException
 from typing import Dict, Sequence, Set, Type
 from pipeline.node import Node
-from pipeline.script import BaseScript, Script
+from pipeline.script import BaseScript
 
 Graph = Dict[str, Sequence[str]]
 
@@ -25,11 +25,11 @@ def fetch_node_codes_from_graph(graph: Graph) -> Set[str]:
 class Pipeline(object):
     graph: Graph  # node_code -> [next node_codes]
     nodes: List[Node]
-    scripts: List[Script]
+    scripts: List[BaseScript]
     logger: Logger
     tp_sorter: TopologicalSorter
 
-    def __init__(self, graph: Dict[str, List[str]], nodes: List[Node], scripts: List[Script], logger: Logger = None):
+    def __init__(self, graph: Dict[str, List[str]], nodes: List[Node], scripts: List[BaseScript], logger: Logger = None):
         self.graph = graph
         self.nodes = nodes
         self.scripts = scripts
