@@ -1,6 +1,8 @@
-from logging import Logger, getLogger
-from attrs import define
 from abc import abstractmethod
+from logging import Logger, getLogger
+
+from attrs import define
+
 
 @define
 class BaseScript(object):

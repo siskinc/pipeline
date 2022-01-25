@@ -8,6 +8,7 @@
 """
 from attrs import define
 
+
 @define
 class Node(object):
     code: str # Node code

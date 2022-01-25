@@ -1,14 +1,15 @@
-from ast import List
 import asyncio
+import time
 from graphlib import TopologicalSorter
 from logging import Logger, getLogger
-import time
+from typing import Dict, List, Sequence, Set, Type
+
 from pipeline.errors import NotFoundNodeException, NotFoundScriptException
-from typing import Dict, Sequence, Set, Type
 from pipeline.node import Node
 from pipeline.script import BaseScript
 
 Graph = Dict[str, Sequence[str]]
+
 
 def fetch_node_codes_from_graph(graph: Graph) -> Set[str]:
     """
@@ -46,25 +47,28 @@ class Pipeline(object):
 
     def _next(self) -> Sequence[Type]:
         return self.tp_sorter.get_ready()
-    
+
     def _has_next(self) -> bool:
         return self.tp_sorter.is_active()
 
     def _done(self, node_code_list: Sequence[str]):
         self.tp_sorter.done(*node_code_list)
-    
+
     def check(self):
         node_codes = fetch_node_codes_from_graph(self.graph)
         for node_code in node_codes:
             if node_code not in self.node_map:
-                raise NotFoundNodeException("Node not found, node code: {}".format(node_code))
+                raise NotFoundNodeException(
+                    "Node not found, node code: {}".format(node_code))
             script_code = self.node_script_map.get(node_code)
             if not script_code:
-                raise NotFoundScriptException("Script code not found, node code: {}".format(node_code))
+                raise NotFoundScriptException(
+                    "Script code not found, node code: {}".format(node_code))
             if script_code not in self.script_map:
-                raise NotFoundScriptException("Script not found, node code: {}, script code: {}".format(node_code, script_code))
+                raise NotFoundScriptException(
+                    "Script not found, node code: {}, script code: {}".format(node_code, script_code))
         self.tp_sorter.prepare()
-    
+
     async def _execute_one(self, data: Dict, context: Dict, node_code: str, step: int):
         start_time = int(time.time() * 1000)
         node = self.node_map[node_code]
@@ -80,15 +84,17 @@ class Pipeline(object):
         finally:
             end_time = int(time.time() * 1000)
             cost_time = end_time - start_time
-            self.logger.info(f"{log_prefix} end execute, cost time: {cost_time}ms")
-    
+            self.logger.info(
+                f"{log_prefix} end execute, cost time: {cost_time}ms")
+
     async def execute(self, data: Dict, context: Dict, node_codes: List[str], step: int):
         log_prefix = f"[execute][step:{step}]"
-        self.logger.info(f"{log_prefix} start execute, ready nodes is {','.join(node_codes)}")
+        self.logger.info(
+            f"{log_prefix} start execute, ready nodes is {','.join(node_codes)}")
         await asyncio.gather(*[self._execute_one(data, context, node_code, step) for node_code in node_codes])
         self.logger.info(f"{log_prefix} end execute")
-    
-    async def run(self, data: Dict, context: Dict={}):
+
+    async def run(self, data: Dict, context: Dict = {}):
         self.check()
         step = 1
         while self._has_next():
